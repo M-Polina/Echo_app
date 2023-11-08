@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(echo_ap)
+project(echo_client)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_AUTOMOC ON)
@@ -15,7 +15,7 @@ set(Boost_USE_STATIC_LIBS       ON)
 set(Boost_USE_MULTITHREADED     ON)
 set(Boost_USE_STATIC_RUNTIME   OFF)
 
-#find_package(Boost 1.83.0 COMPONENTS filesystem system REQUIRED)
+#find_package(Boost 1.83.0 COMPONENTS filesystem system)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
@@ -28,8 +28,8 @@ find_package(Qt5 COMPONENTS
         Widgets
         REQUIRED)
 
-add_executable(echo_ap main.cpp)
-target_link_libraries(echo_ap
+add_executable(echo_client main.cpp)
+target_link_libraries(echo_client
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
@@ -39,7 +39,7 @@ target_link_libraries(echo_ap
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(DEBUG_SUFFIX)
-    if (MSVC AND CMAKE_BUILD_TYPE MATCHES "Debug")
+    if (CMAKE_BUILD_TYPE MATCHES "Debug")
         set(DEBUG_SUFFIX "d")
     endif ()
     set(QT_INSTALL_PATH "${CMAKE_PREFIX_PATH}")
