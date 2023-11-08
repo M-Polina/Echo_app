@@ -1,98 +1,77 @@
-#include <cstdlib>
+#include <cstring>
 #include <iostream>
-#include <boost/bind.hpp>
 #include <boost/asio.hpp>
 
 using boost::asio::ip::tcp;
 
-class Echo_session {
-public:
-    Echo_session(boost::asio::io_service &io_service)
-            : socket_(io_service) {
-    }
-
-    tcp::socket &socket() {
-        return socket_;
-    }
-
-    void start() {
-        socket_.async_read_some(boost::asio::buffer(data_, max_length),
-                                boost::bind(&Echo_session::handle_write, this,
-                                            boost::asio::placeholders::error,
-                                            boost::asio::placeholders::bytes_transferred));
-    }
-
-    void handle_write(const boost::system::error_code &error,
-                      size_t bytes_transferred) {
-        if (!error) {
-            boost::asio::async_write(socket_,
-                                     boost::asio::buffer(data_, bytes_transferred),
-                                     boost::bind(&Echo_session::handle_read, this,
-                                                 boost::asio::placeholders::error));
-        } else {
-            std::cout << "Session stopped and deleted: " << this << std::endl;
-            delete this;
-        }
-    }
-
-    void handle_read(const boost::system::error_code &error) {
-        if (!error) {
-            socket_.async_read_some(boost::asio::buffer(data_, max_length),
-                                    boost::bind(&Echo_session::handle_write, this,
-                                                boost::asio::placeholders::error,
-                                                boost::asio::placeholders::bytes_transferred));
-        } else {
-            std::cout << "Error handle_write" << std::endl;
-            delete this;
-        }
-    }
-
-private:
-    tcp::socket socket_;
-    enum {
-        max_length = 1024
-    };
-    char data_[max_length];
+enum {
+    max_length = 1024
 };
 
-class Echo_server {
+class Echo_client {
 public:
-    Echo_server(boost::asio::io_service &io_service, short port)
-            : io_service_(io_service),
-              acceptor_(io_service, tcp::endpoint(tcp::v4(), port)) {
-        Echo_session *new_session = new Echo_session(io_service_);
-        std::cout << "New Session was created: " << new_session << std::endl;
-
-        acceptor_.async_accept(new_session->socket(),
-                               boost::bind(&Echo_server::handle_accept, this, new_session,
-                                           boost::asio::placeholders::error));
+    Echo_client(boost::asio::io_service &io_service, std::string host, std::string port)
+//            : io_service_(io_service), resolver_(io_service), query_(tcp::v4(), host, port),
+    : io_service_(io_service), resolver_(io_service), query_(boost::asio::ip::address::from_string(host), std::atoi(port.data())),
+              socket_(io_service){
+//        iterator_ = resolver_.resolve(query_);
+        socket_connect();
+        start();
     }
 
-    void handle_accept(Echo_session *new_session,
-                       const boost::system::error_code &error) {
-        if (!error) {
-            new_session->start();
-            new_session = new Echo_session(io_service_);
-            std::cout << "New Session was created: " << new_session << std::endl;
-            acceptor_.async_accept(new_session->socket(),
-                                   boost::bind(&Echo_server::handle_accept, this, new_session,
-                                               boost::asio::placeholders::error));
-        } else {
-            std::cout << "Error handle_accept" << std::endl;
-            delete new_session;
-        }
+    ~Echo_client() {
+        socket_.close();
+    }
+
+    void socket_connect(){
+//        socket_.connect(*iterator_);
+        socket_.connect(query_);
+    }
+
+    void start(){
+        get_request();
+    }
+
+    void get_request(){
+        char request[max_length];
+        std::cout << "Enter message: ";
+        std::cin.getline(request, max_length);
+        size_t request_length = strlen(request);
+        handle_write(request, request_length);
+    }
+
+    void handle_write(char* request, size_t request_length){
+        boost::asio::write(socket_, boost::asio::buffer(request, request_length));
+        handle_get_reply(request_length);
+    }
+
+    void handle_get_reply(size_t request_length)
+    {
+        char reply[max_length];
+        size_t reply_length = boost::asio::read(socket_,
+                                                boost::asio::buffer(reply, request_length));
+        std::cout << "Reply: ";
+        std::cout.write(reply, reply_length);
+        std::cout << "\n";
+        get_request();
     }
 
 private:
     boost::asio::io_service &io_service_;
-    tcp::acceptor acceptor_;
+    tcp::resolver resolver_;
+    tcp::endpoint query_;
+//    tcp::resolver::query query_;
+    tcp::resolver::iterator iterator_;
+    tcp::socket socket_;
 };
+
 
 int main(int argc, char *argv[]) {
     try {
         boost::asio::io_service io_service;
-        Echo_server server(io_service, std::atoi("80"));
-        io_service.run();
+
+        Echo_client client(io_service, "localhost", "80");
+
     }
     catch (std::exception &e) {
         std::cerr << "Exception: " << e.what() << "\n";
@@ -100,14 +79,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
