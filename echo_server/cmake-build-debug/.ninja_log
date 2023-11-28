@@ -1,0 +1,7 @@
+# ninja log v5
+9	988	1701200203265337652	CMakeFiles/echo_server.dir/main.cpp.o	ad54d3514331eb1a
+989	1031	1701200203312588733	echo_server	cb86ef5956d7ecb8
+21	1075	1701201743204342911	CMakeFiles/echo_server.dir/main.cpp.o	4a0fc32088fefca5
+1079	1120	1701201743255616859	echo_server	cb86ef5956d7ecb8
+8	1065	1701202148350518365	CMakeFiles/echo_server.dir/main.cpp.o	4a0fc32088fefca5
+1066	1109	1701202148397986441	echo_server	cb86ef5956d7ecb8
