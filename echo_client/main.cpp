@@ -4,10 +4,6 @@
 
 using boost::asio::ip::tcp;
 
-enum {
-    max_length = 1024
-};
-
 class Echo_client {
 public:
     Echo_client(boost::asio::io_service &io_service, std::string host, std::string port)
@@ -37,8 +33,6 @@ public:
         request.append("\r\n\r\n");
         std::cout << request.size() << std::endl;
 
-//        request.append("\n");
-//        size_t request_length = std::strlen(request);
         handle_write(request);
     }
 
@@ -49,12 +43,7 @@ public:
 
     void handle_get_reply(size_t request_length)
     {
-//        std::string str = "123456";
-//        str.erase(str.size()-4);
-//        std::cout << str;
         boost::asio::streambuf reply;
-//        har reply[max_length];
-//
         boost::asio::read_until(socket_, reply, "\r\n\r\n");
         std::istream reply_istream(&reply);
         std::string reply_str;
@@ -63,59 +52,7 @@ public:
         reply_str.erase(reply_str.size() - 1);
         std::cout << "Reply: " << reply_str << std::endl;
         get_request();
-
-//                                "\r\n\r\n",
-//        write_reply(reply);
-//                               std::bind(&Echo_client::write_reply, this, std::placeholders::_1, std::placeholders::_2));
-////                                [self](boost::system::error_code ec, std::size_t length)
-////                                     {
-////                                         if (!ec)
-////                                         {
-////                                             std::cout << "Reply: ";
-////                                             std::cout.write(reply, request_length);
-////                                             std::cout << "\n";
-////                                             self->get_request();
-////                                         }
-////                                     });
-//        size_t reply_length = boost::asio::read(socket_,
-//                                                boost::asio::buffer(reply, request_length));
-//        std::cout << "Reply: ";
-//        std::cout.write(reply, reply_length);
-//        std::cout << "\n";
-//        get_request();
     }
-
-//    void handle_get_reply(size_t request_length)
-//    {
-//        char reply[max_length];
-//        size_t reply_length = boost::asio::read(socket_,
-//                                                boost::asio::buffer(reply, request_length));
-//
-//
-//        std::cout << "Reply: ";
-//        std::cout.write(reply, reply_length);
-//        std::cout << "HI";
-//        std::cout << "\n";
-//        get_request();
-//    }
-
-//    void write_reply(boost::system::error_code ec, std::size_t reply_len) {
-//void write_reply(boost::asio::streambuf reply) {
-//        if (ec) {
-//            std::cout << "Disconnection!" << std::endl;
-//        } else {
-//            std::istream reply_istream(&reply);
-//            std::string reply_str;
-//            std::getline(reply_istream, reply_str);
-//            reply_str.erase(reply_str.size() - 4);
-//            std::cout << "Reply: " << reply_str << std::endl;
-//
-////            std::cout << "Reply: ";
-////            std::cout.write(reply, reply_length);
-////            std::cout << "\n";
-//            get_request();
-//        }
-//    }
 
 private:
     boost::asio::io_service &io_service_;
