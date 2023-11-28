@@ -23,9 +23,7 @@ public:
 private:
     void do_read()
     {
-//        auto self(shared_from_this());
-        boost::asio::async_read_until(socket_, response, "\n\t",
-//                                [this, self](boost::system::error_code ec, std::size_t length)
+        boost::asio::async_read_until(socket_, response, "\r\n\r\n",
                                 [self = shared_from_this()](boost::system::error_code ec, std::size_t length)
                                 {
                                     if (!ec)
@@ -37,7 +35,6 @@ private:
 
     void do_write(std::size_t length)
     {
-//        auto self(shared_from_this());
         boost::asio::async_write(socket_, response,
                                  [self = shared_from_this()](boost::system::error_code ec, std::size_t /*length*/)
                                  {
@@ -50,8 +47,6 @@ private:
 
     tcp::socket socket_;
     boost::asio::streambuf response;
-//    enum { max_length = 1024 };
-//    char data_[max_length];
 };
 
 class server
